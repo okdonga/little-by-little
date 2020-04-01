@@ -1,11 +1,20 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+// import logo from "./logo.svg";
+// import "./App.css";
+import Map from "./Map";
+import Timeseries from "./Timeseries";
 
 function App() {
   return (
     <div className="App">
-      <header className="App-header">
+      <h1>Goal: Show all infected cases in global map</h1>
+      <h2>Rank by country</h2>
+      <h3>Top 3 most affected</h3>
+      <h4>Top 3 Death rate / Infected</h4>
+      <Timeseries />
+      {/* <Map /> */}
+
+      {/* <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
         <p>
           Edit <code>src/App.js</code> and save to reload.
@@ -18,7 +27,7 @@ function App() {
         >
           Learn React
         </a>
-      </header>
+      </header> */}
     </div>
   );
 }
