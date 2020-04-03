@@ -4,7 +4,13 @@ export const AMPM = {
 };
 
 export const DAY_OF_WEEK = {
-  ALL: 'all',
-  WEEKDAY: 'weekday',
-  WEEKEND: 'weekend'
-}
+  ALL: "all",
+  WEEKDAY: "weekday",
+  WEEKEND: "weekend"
+};
+
+export const AFFECTED_TYPE = {
+  CONFIRMED: "confirmed",
+  DEATHS: "deaths",
+  RECOVERED: "recovered"
+};

@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import mapboxgl from "mapbox-gl";
 import "./Default.css";
-import { AMPM, DAY_OF_WEEK } from "./constant";
+import { AMPM, DAY_OF_WEEK, AFFECTED_TYPE } from "./constant";
 
 mapboxgl.accessToken = process.env.REACT_APP_MAPBOXGL_ACCESS_TOKEN;
 
@@ -36,6 +36,7 @@ function Timeseries() {
   const [time, setTime] = useState({ hour: 12, ampm: AMPM.PM });
   const [map, setMap] = useState(null);
   const [dayOfWeek, setDayOfWeek] = useState(DAY_OF_WEEK.ALL);
+  const [affectedType, setAffectedType] = useState(AFFECTED_TYPE.CONFIRMED);
 
   useEffect(() => {
     const { lat, lng, zoom } = mapProperty;
@@ -56,7 +57,8 @@ function Timeseries() {
         type: "circle",
         source: {
           type: "geojson",
-          data: "./data/collisions1601.geojson" // replace this with the url of your own geojson
+          // data: "./data/collisions1601.geojson" // replace this with the url of your own geojson
+          data: "./data/03-17-2020.geojson" // replace this with the url of your own geojson
           //   type: "csv",
           //   data: "./data/time_series_19-covid-Confirmed.csv" // replace this with the url of your own geojson
         },
@@ -64,7 +66,7 @@ function Timeseries() {
           "circle-radius": [
             "interpolate",
             ["linear"],
-            ["number", ["get", "Casualty"]],
+            ["number", ["get", "Deaths"]],
             0,
             4,
             5,
@@ -73,7 +75,7 @@ function Timeseries() {
           "circle-color": [
             "interpolate",
             ["linear"],
-            ["number", ["get", "Casualty"]],
+            ["number", ["get", "Deaths"]],
             0,
             "#2DC4B2",
             1,
@@ -108,20 +110,23 @@ function Timeseries() {
   }, []);
 
   function handleFilterChange(e) {
-    var day = e.target.value;
-    setDayOfWeek(day);
+    var type = e.target.value;
+    setAffectedType(type);
+    // setDayOfWeek(day);
     let filterDay;
     // update the map filter
-    if (day === "all") {
-      filterDay = ["!=", ["string", ["get", "Day"]], "placeholder"];
-    } else if (day === "weekday") {
+    if (type === AFFECTED_TYPE.CONFIRMED) {
+      // filterDay = ["!=", ["string", ["get", "Day"]], "placeholder"];
+      // filterDay = ["match", ["get", "Confirmed"], ""];
+    } else if (type === AFFECTED_TYPE.DEATHS) {
+      map.setPaintProperty();
       filterDay = ["match", ["get", "Day"], ["Sat", "Sun"], false, true];
-    } else if (day === "weekend") {
+    } else if (type === AFFECTED_TYPE.RECOVERED) {
       filterDay = ["match", ["get", "Day"], ["Sat", "Sun"], true, false];
     } else {
       console.log("error");
     }
-    map.setFilter("collisions", ["all", filterDay]);
+    map.setFilter("collisions", [AFFECTED_TYPE.CONFIRMED, filterDay]);
   }
 
   function handleInputChange(e) {
@@ -156,7 +161,7 @@ function Timeseries() {
 
         <div className="session">
           <h2>Day of the week</h2>
-          <h2>Casualty</h2>
+          <h2>Deaths</h2>
           <div className="row colors"></div>
           <div className="row labels">
             <div className="label">0</div>
@@ -190,32 +195,32 @@ function Timeseries() {
           <h2>Day of the week</h2>
           <div className="row" id="filters">
             <input
-              id="all"
+              id="confirmed"
               type="radio"
               name="toggle"
-              value={DAY_OF_WEEK.ALL}
-              checked={dayOfWeek === DAY_OF_WEEK.ALL}
+              value={AFFECTED_TYPE.CONFIRMED}
+              checked={affectedType === AFFECTED_TYPE.CONFIRMED}
               onChange={handleFilterChange}
             />
-            <label htmlFor="all">All</label>
+            <label htmlFor="all">Confirmed</label>
             <input
-              id="weekday"
+              id="deaths"
               type="radio"
               name="toggle"
-              value={DAY_OF_WEEK.WEEKDAY}
-              checked={dayOfWeek === DAY_OF_WEEK.WEEKDAY}
+              value={AFFECTED_TYPE.DEATHS}
+              checked={affectedType === AFFECTED_TYPE.DEATHS}
               onChange={handleFilterChange}
             />
-            <label htmlFor="weekday">Weekday</label>
+            <label htmlFor="weekday">Deaths</label>
             <input
-              id="weekend"
+              id="recovered"
               type="radio"
               name="toggle"
-              value={DAY_OF_WEEK.WEEKEND}
-              checked={dayOfWeek === DAY_OF_WEEK.WEEKEND}
+              value={AFFECTED_TYPE.RECOVERED}
+              checked={affectedType === AFFECTED_TYPE.RECOVERED}
               onChange={handleFilterChange}
             />
-            <label htmlFor="weekend">Weekend</label>
+            <label htmlFor="weekend">Recovered</label>
           </div>
         </div>
       </div>
