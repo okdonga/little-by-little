@@ -31,7 +31,7 @@ function Timeseries() {
   const [mapProperty, setMapProperty] = useState({
     lng: -74.0059,
     lat: 40.7128,
-    zoom: 12
+    zoom: 3
   });
   const [time, setTime] = useState({ hour: 12, ampm: AMPM.PM });
   const [map, setMap] = useState(null);
@@ -52,15 +52,60 @@ function Timeseries() {
     setMap(map);
 
     map.on("load", function() {
+      map.addSource("corona", {
+        type: "geojson",
+        data: "./data/03-17-2020.geojson" // replace this with the url of your own geojson
+      });
+
       map.addLayer({
-        id: "collisions",
+        id: "confirmed",
         type: "circle",
-        source: {
-          type: "geojson",
-          // data: "./data/collisions1601.geojson" // replace this with the url of your own geojson
-          data: "./data/03-17-2020.geojson" // replace this with the url of your own geojson
-          //   type: "csv",
-          //   data: "./data/time_series_19-covid-Confirmed.csv" // replace this with the url of your own geojson
+        source: "corona",
+        // source: {
+        //   type: "geojson",
+        //   // data: "./data/collisions1601.geojson" // replace this with the url of your own geojson
+        //   data: "./data/03-17-2020.geojson" // replace this with the url of your own geojson
+        //   //   type: "csv",
+        //   //   data: "./data/time_series_19-covid-Confirmed.csv" // replace this with the url of your own geojson
+        // },
+        paint: {
+          "circle-radius": [
+            "interpolate",
+            ["linear"],
+            ["number", ["get", "Confirmed"]],
+            0,
+            4,
+            5,
+            24
+          ],
+          "circle-color": [
+            "interpolate",
+            ["linear"],
+            ["number", ["get", "Confirmed"]],
+            0,
+            "#2DC4B2",
+            1,
+            "#3BB3C3",
+            2,
+            "#669EC4",
+            3,
+            "#8B88B6",
+            4,
+            "#A2719B",
+            5,
+            "#AA5E79"
+          ],
+          //   "circle-opacity": 0.8,
+          "circle-opacity": 0.8
+        }
+      });
+
+      map.addLayer({
+        id: "deaths",
+        type: "circle",
+        source: "corona",
+        layout: {
+          visibility: "none"
         },
         paint: {
           "circle-radius": [
@@ -89,7 +134,44 @@ function Timeseries() {
             5,
             "#AA5E79"
           ],
-          //   "circle-opacity": 0.8,
+          "circle-opacity": 0.8
+        }
+      });
+
+      map.addLayer({
+        id: "recovered",
+        type: "circle",
+        source: "corona",
+        layout: {
+          visibility: "none"
+        },
+        paint: {
+          "circle-radius": [
+            "interpolate",
+            ["linear"],
+            ["number", ["get", "Recovered"]],
+            0,
+            4,
+            5,
+            24
+          ],
+          "circle-color": [
+            "interpolate",
+            ["linear"],
+            ["number", ["get", "Recovered"]],
+            0,
+            "#2DC4B2",
+            1,
+            "#3BB3C3",
+            2,
+            "#669EC4",
+            3,
+            "#8B88B6",
+            4,
+            "#A2719B",
+            5,
+            "#AA5E79"
+          ],
           "circle-opacity": 0.8
         }
       });
@@ -112,28 +194,21 @@ function Timeseries() {
   function handleFilterChange(e) {
     var type = e.target.value;
     setAffectedType(type);
-    // setDayOfWeek(day);
-    let filterDay;
-    // update the map filter
-    if (type === AFFECTED_TYPE.CONFIRMED) {
-      // filterDay = ["!=", ["string", ["get", "Day"]], "placeholder"];
-      // filterDay = ["match", ["get", "Confirmed"], ""];
-    } else if (type === AFFECTED_TYPE.DEATHS) {
-      map.setPaintProperty();
-      filterDay = ["match", ["get", "Day"], ["Sat", "Sun"], false, true];
-    } else if (type === AFFECTED_TYPE.RECOVERED) {
-      filterDay = ["match", ["get", "Day"], ["Sat", "Sun"], true, false];
-    } else {
-      console.log("error");
+
+    for (const property in AFFECTED_TYPE) {
+      if (AFFECTED_TYPE[property] === type) {
+        map.setLayoutProperty(AFFECTED_TYPE[property], "visibility", "visible");
+      } else {
+        map.setLayoutProperty(AFFECTED_TYPE[property], "visibility", "none");
+      }
     }
-    map.setFilter("collisions", [AFFECTED_TYPE.CONFIRMED, filterDay]);
   }
 
   function handleInputChange(e) {
     var hour = parseInt(e.target.value);
 
     // update the map
-    map.setFilter("collisions", ["==", ["number", ["get", "Hour"]], hour]);
+    // map.setFilter("collisions", ["==", ["number", ["get", "Hour"]], hour]);
 
     // converting 0-23 hour to AMPM format
     var ampm = hour >= 12 ? AMPM.PM : AMPM.AM;
