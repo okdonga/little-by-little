@@ -37,6 +37,7 @@ function Timeseries() {
   const [map, setMap] = useState(null);
   const [dayOfWeek, setDayOfWeek] = useState(DAY_OF_WEEK.ALL);
   const [affectedType, setAffectedType] = useState(AFFECTED_TYPE.CONFIRMED);
+  const [selectedRegion, setSelectedRegion] = useState("");
 
   useEffect(() => {
     const { lat, lng, zoom } = mapProperty;
@@ -177,6 +178,18 @@ function Timeseries() {
       });
     });
 
+    map.on("mousemove", e => {
+      var casualty = map.queryRenderedFeatures(e.point, {
+        layers: ["confirmed"]
+      });
+      if (casualty.length > 0) {
+        const { Country } = casualty[0].properties;
+        setSelectedRegion(Country);
+      } else {
+        setSelectedRegion("");
+      }
+    });
+
     map.on("move", () => {
       console.log("move");
       setMapProperty({
@@ -225,18 +238,16 @@ function Timeseries() {
     <div style={mapContainerStyle}>
       <div id="map" style={mapStyle} ref={el => (mapContainer.current = el)} />;
       <div id="console" style={consoleStyle}>
-        <h1>Motor vehicle collisions</h1>
+        <h1>COVID-19 Global Cases</h1>
         <p>
           Data:{" "}
-          <a href="https://data.cityofnewyork.us/Public-Safety/NYPD-Motor-Vehicle-Collisions/h9gi-nx95">
-            Motor vehicle collision injuries and deaths
-          </a>{" "}
-          in NYC, Jan 2016
+          <a href="https://covid-19.datasettes.com/">Johns Hopkins CSSE</a> from
+          Jan 2020
         </p>
 
         <div className="session">
-          <h2>Day of the week</h2>
-          <h2>Deaths</h2>
+          <h2>{selectedRegion}</h2>
+          <h2>Confirmed/Death/Recovered</h2>
           <div className="row colors"></div>
           <div className="row labels">
             <div className="label">0</div>
