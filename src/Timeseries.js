@@ -37,7 +37,10 @@ function Timeseries() {
   const [map, setMap] = useState(null);
   const [dayOfWeek, setDayOfWeek] = useState(DAY_OF_WEEK.ALL);
   const [affectedType, setAffectedType] = useState(AFFECTED_TYPE.CONFIRMED);
-  const [selectedRegion, setSelectedRegion] = useState("");
+  const [selectedRegion, setSelectedRegion] = useState(null);
+  const [countConfirmed, setCountConfirmed] = useState(null);
+  const [countDeaths, setCountDeaths] = useState(null);
+  const [countRecovered, setCountRecovered] = useState(null);
 
   useEffect(() => {
     const { lat, lng, zoom } = mapProperty;
@@ -183,10 +186,16 @@ function Timeseries() {
         layers: ["confirmed"]
       });
       if (casualty.length > 0) {
-        const { Country } = casualty[0].properties;
+        const { Country, Confirmed, Deaths, Recovered } = casualty[0].properties;
         setSelectedRegion(Country);
+        setCountConfirmed(Confirmed);
+        setCountDeaths(Deaths);
+        setCountRecovered(Recovered);
       } else {
-        setSelectedRegion("");
+        setSelectedRegion(null);
+        setCountConfirmed(null);
+        setCountDeaths(null);
+        setCountRecovered(null);
       }
     });
 
@@ -247,7 +256,20 @@ function Timeseries() {
 
         <div className="session">
           <h2>{selectedRegion}</h2>
-          <h2>Confirmed/Death/Recovered</h2>
+          {countConfirmed !== null && (<h2>
+            <span>Confirmed: </span>{countConfirmed}
+          </h2>
+          )}
+          {countDeaths !== null && (
+            <h2>
+              <span>Deaths: </span>{countDeaths}
+            </h2>
+          )}
+          {countRecovered !== null && (
+            <h2>
+              <span>Recovered: </span>{countRecovered}
+            </h2>
+          )}
           <div className="row colors"></div>
           <div className="row labels">
             <div className="label">0</div>
