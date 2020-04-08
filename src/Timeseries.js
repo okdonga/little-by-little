@@ -310,7 +310,7 @@ function Timeseries() {
               checked={affectedType === AFFECTED_TYPE.CONFIRMED}
               onChange={handleFilterChange}
             />
-            <label htmlFor="all">Confirmed</label>
+            <label htmlFor="confirmed">Confirmed</label>
             <input
               id="deaths"
               type="radio"
@@ -319,7 +319,7 @@ function Timeseries() {
               checked={affectedType === AFFECTED_TYPE.DEATHS}
               onChange={handleFilterChange}
             />
-            <label htmlFor="weekday">Deaths</label>
+            <label htmlFor="deaths">Deaths</label>
             <input
               id="recovered"
               type="radio"
@@ -328,7 +328,7 @@ function Timeseries() {
               checked={affectedType === AFFECTED_TYPE.RECOVERED}
               onChange={handleFilterChange}
             />
-            <label htmlFor="weekend">Recovered</label>
+            <label htmlFor="recovered">Recovered</label>
           </div>
         </div>
       </div>
