@@ -181,31 +181,36 @@ function Timeseries() {
       });
     });
 
-    map.on("mousemove", e => {
-      var casualty = map.queryRenderedFeatures(e.point, {
-        layers: ["confirmed"]
-      });
-      if (casualty.length > 0) {
-        const { Country, Confirmed, Deaths, Recovered } = casualty[0].properties;
-        setSelectedRegion(Country);
-        setCountConfirmed(Confirmed);
-        setCountDeaths(Deaths);
-        setCountRecovered(Recovered);
-      } else {
-        setSelectedRegion(null);
-        setCountConfirmed(null);
-        setCountDeaths(null);
-        setCountRecovered(null);
-      }
+    // Create a popup, but don't add it to the map yet.
+    var popup = new mapboxgl.Popup({
+      closeButton: false,
+      closeOnClick: false
     });
 
-    map.on("move", () => {
-      console.log("move");
-      setMapProperty({
-        lng: map.getCenter().lng.toFixed(4),
-        lat: map.getCenter().lat.toFixed(4),
-        zoom: map.getZoom().toFixed(2)
+    map.on("mousemove",  e => {
+      var casualty = map.queryRenderedFeatures(e.point, {
+        layers: [AFFECTED_TYPE.CONFIRMED, AFFECTED_TYPE.DEATHS, AFFECTED_TYPE.RECOVERED]
       });
+
+      if (casualty.length > 0) {
+        var coordinates = casualty[0].geometry.coordinates.slice();
+  
+        // Ensure that if the map is zoomed out such that multiple
+        // copies of the feature are visible, the popup appears
+        // over the copy being pointed to.
+        while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+          coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+        }
+  
+        const { Country, Confirmed, Deaths, Recovered } = casualty[0].properties;
+  
+        popup
+        .setLngLat(coordinates)
+        .setHTML(`<strong>${Country}</strong><p>Confirmed: ${Confirmed}</br>Deaths: ${Deaths}</br>Recovered: ${Recovered}</p>`)
+        .addTo(map);
+      } else {
+        popup.remove();
+      }
     });
 
     return () => {
