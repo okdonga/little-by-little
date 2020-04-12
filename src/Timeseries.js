@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import mapboxgl from "mapbox-gl";
 import "./Default.css";
-import { AMPM, DAY_OF_WEEK, AFFECTED_TYPE } from "./constant";
+import { AMPM, AFFECTED_TYPE, MONTHS, DATES } from "./constant";
 
 mapboxgl.accessToken = process.env.REACT_APP_MAPBOXGL_ACCESS_TOKEN;
 
@@ -33,9 +33,11 @@ function Timeseries() {
     lat: 40.7128,
     zoom: 3
   });
-  const [time, setTime] = useState({ hour: 12, ampm: AMPM.PM });
+  // const [time, setTime] = useState({ hour: 12, ampm: AMPM.PM });
+  const [month, setMonth] = useState(0)
+  const [date, setDate]= useState(0); // DATES.length
   const [map, setMap] = useState(null);
-  const [dayOfWeek, setDayOfWeek] = useState(DAY_OF_WEEK.ALL);
+  // TODO: rename this to layer 
   const [affectedType, setAffectedType] = useState(AFFECTED_TYPE.CONFIRMED);
   const [selectedRegion, setSelectedRegion] = useState(null);
   const [countConfirmed, setCountConfirmed] = useState(null);
@@ -232,21 +234,19 @@ function Timeseries() {
   }
 
   function handleInputChange(e) {
-    var hour = parseInt(e.target.value);
-
-    // update the map
-    // map.setFilter("collisions", ["==", ["number", ["get", "Hour"]], hour]);
-
-    // converting 0-23 hour to AMPM format
-    var ampm = hour >= 12 ? AMPM.PM : AMPM.AM;
-    var hour12 = hour % 12;
-
-    // update text in the
-    setTime({ hour: hour12, ampm });
+    var idx = parseInt(e.target.value);
+    setDate(idx);
+    filterBy(DATES[idx])
   }
 
+  function filterBy(date) {
+    var filters = ['==', 'Date', date];
+    // change layer 
+    map.setFilter(affectedType, filters);
+  }
+ 
+         
   const { lng, lat, zoom } = mapProperty;
-  const { hour, ampm } = time;
 
   return (
     <div style={mapContainerStyle}>
@@ -287,20 +287,19 @@ function Timeseries() {
         </div>
         <div className="session" id="sliderbar">
           <h2>
-            Hour:{" "}
+            Date: {" "}
             <label id="active-hour">
-              {hour}
-              {ampm}
+             {DATES[date]}
             </label>
           </h2>
           <input
-            id="slider"
+            id="date-slider"
             className="row"
             type="range"
             min="0"
-            max="23"
+            max={DATES.length-1}
             step="1"
-            value={ampm === AMPM.PM ? hour + 12 : hour}
+            value={date}
             onChange={handleInputChange}
           />
         </div>
