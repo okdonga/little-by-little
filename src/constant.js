@@ -4,8 +4,8 @@ export const AMPM = {
 };
 
 export const DATES = [
-  '2020-03-17',
-  '2020-04-16'
+  '3/17/20',
+  '4/4/20'
 ];
 
 export const MONTHS = [

@@ -1,8 +1,10 @@
 // https://docs.mapbox.com/help/tutorials/show-changes-over-time/
+// https://github.com/CSSEGISandData/COVID-19.git 
 import React, { useState, useEffect, useRef } from "react";
 import mapboxgl from "mapbox-gl";
 import "./Default.css";
 import { AMPM, AFFECTED_TYPE, MONTHS, DATES } from "./constant";
+import { numberWithCommas } from './util/number';
 
 mapboxgl.accessToken = process.env.REACT_APP_MAPBOXGL_ACCESS_TOKEN;
 
@@ -58,22 +60,23 @@ function Timeseries() {
     setMap(map);
 
     map.on("load", function() {
-      map.addSource("corona", {
-        type: "geojson",
-        data: "./data/03-17-2020.geojson" // replace this with the url of your own geojson
-      });
+      // map.addSource("corona", {
+      //   type: "geojson",
+      //   // data: "./data/03-17-2020.geojson" // replace this with the url of your own geojson
+      //   data: "./data/time_series_covid19_confirmed_global.geojson" // replace this with the url of your own geojson
+      // });
 
       map.addLayer({
         id: "confirmed",
         type: "circle",
-        source: "corona",
-        // source: {
-        //   type: "geojson",
-        //   // data: "./data/collisions1601.geojson" // replace this with the url of your own geojson
-        //   data: "./data/03-17-2020.geojson" // replace this with the url of your own geojson
-        //   //   type: "csv",
-        //   //   data: "./data/time_series_19-covid-Confirmed.csv" // replace this with the url of your own geojson
-        // },
+        // source: "corona",
+        source: {
+          type: "geojson",
+          // data: "./data/collisions1601.geojson" // replace this with the url of your own geojson
+          data: "./data/time_series_covid19_confirmed_global.geojson" // replace this with the url of your own geojson
+          //   type: "csv",
+          //   data: "./data/time_series_19-covid-Confirmed.csv" // replace this with the url of your own geojson
+        },
         paint: {
           "circle-radius": [
             "interpolate",
@@ -106,81 +109,83 @@ function Timeseries() {
         }
       });
 
-      map.addLayer({
-        id: "deaths",
-        type: "circle",
-        source: "corona",
-        layout: {
-          visibility: "none"
-        },
-        paint: {
-          "circle-radius": [
-            "interpolate",
-            ["linear"],
-            ["number", ["get", "Deaths"]],
-            0,
-            4,
-            5,
-            24
-          ],
-          "circle-color": [
-            "interpolate",
-            ["linear"],
-            ["number", ["get", "Deaths"]],
-            0,
-            "#2DC4B2",
-            1,
-            "#3BB3C3",
-            2,
-            "#669EC4",
-            3,
-            "#8B88B6",
-            4,
-            "#A2719B",
-            5,
-            "#AA5E79"
-          ],
-          "circle-opacity": 0.8
-        }
-      });
+      // change layer 
+      map.setFilter('confirmed', ['==', 'Date', DATES[0]]);
+      // map.addLayer({
+      //   id: "deaths",
+      //   type: "circle",
+      //   source: "corona",
+      //   layout: {
+      //     visibility: "none"
+      //   },
+      //   paint: {
+      //     "circle-radius": [
+      //       "interpolate",
+      //       ["linear"],
+      //       ["number", ["get", "Deaths"]],
+      //       0,
+      //       4,
+      //       5,
+      //       24
+      //     ],
+      //     "circle-color": [
+      //       "interpolate",
+      //       ["linear"],
+      //       ["number", ["get", "Deaths"]],
+      //       0,
+      //       "#2DC4B2",
+      //       1,
+      //       "#3BB3C3",
+      //       2,
+      //       "#669EC4",
+      //       3,
+      //       "#8B88B6",
+      //       4,
+      //       "#A2719B",
+      //       5,
+      //       "#AA5E79"
+      //     ],
+      //     "circle-opacity": 0.8
+      //   }
+      // });
 
-      map.addLayer({
-        id: "recovered",
-        type: "circle",
-        source: "corona",
-        layout: {
-          visibility: "none"
-        },
-        paint: {
-          "circle-radius": [
-            "interpolate",
-            ["linear"],
-            ["number", ["get", "Recovered"]],
-            0,
-            4,
-            5,
-            24
-          ],
-          "circle-color": [
-            "interpolate",
-            ["linear"],
-            ["number", ["get", "Recovered"]],
-            0,
-            "#2DC4B2",
-            1,
-            "#3BB3C3",
-            2,
-            "#669EC4",
-            3,
-            "#8B88B6",
-            4,
-            "#A2719B",
-            5,
-            "#AA5E79"
-          ],
-          "circle-opacity": 0.8
-        }
-      });
+      // map.addLayer({
+      //   id: "recovered",
+      //   type: "circle",
+      //   source: "corona",
+      //   layout: {
+      //     visibility: "none"
+      //   },
+      //   paint: {
+      //     "circle-radius": [
+      //       "interpolate",
+      //       ["linear"],
+      //       ["number", ["get", "Recovered"]],
+      //       0,
+      //       4,
+      //       5,
+      //       24
+      //     ],
+      //     "circle-color": [
+      //       "interpolate",
+      //       ["linear"],
+      //       ["number", ["get", "Recovered"]],
+      //       0,
+      //       "#2DC4B2",
+      //       1,
+      //       "#3BB3C3",
+      //       2,
+      //       "#669EC4",
+      //       3,
+      //       "#8B88B6",
+      //       4,
+      //       "#A2719B",
+      //       5,
+      //       "#AA5E79"
+      //     ],
+      //     "circle-opacity": 0.8
+      //   }
+      // });
     });
 
     // Create a popup, but don't add it to the map yet.
@@ -190,8 +195,10 @@ function Timeseries() {
     });
 
     map.on("mousemove",  e => {
+      console.log(e)
       var casualty = map.queryRenderedFeatures(e.point, {
-        layers: [AFFECTED_TYPE.CONFIRMED, AFFECTED_TYPE.DEATHS, AFFECTED_TYPE.RECOVERED]
+        // layers: [AFFECTED_TYPE.CONFIRMED, AFFECTED_TYPE.DEATHS, AFFECTED_TYPE.RECOVERED]
+        layers: [AFFECTED_TYPE.CONFIRMED]
       });
 
       if (casualty.length > 0) {
@@ -204,11 +211,11 @@ function Timeseries() {
           coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
         }
   
-        const { Country, Confirmed, Deaths, Recovered } = casualty[0].properties;
+        const { country_region, province_state, Confirmed, Deaths, Recovered, Date } = casualty[0].properties;
   
         popup
         .setLngLat(coordinates)
-        .setHTML(`<strong>${Country}</strong><p>Confirmed: ${Confirmed}</br>Deaths: ${Deaths}</br>Recovered: ${Recovered}</p>`)
+        .setHTML(`<strong>${country_region}</strong><p>province_state: ${province_state}</br>Confirmed: ${numberWithCommas(Confirmed)}</br>Date: ${Date}</p>`)
         .addTo(map);
       } else {
         popup.remove();
@@ -243,6 +250,7 @@ function Timeseries() {
     var filters = ['==', 'Date', date];
     // change layer 
     map.setFilter(affectedType, filters);
+    // map.setFilter('corona', filters);
   }
  
          
@@ -315,7 +323,7 @@ function Timeseries() {
               onChange={handleFilterChange}
             />
             <label htmlFor="confirmed">Confirmed</label>
-            <input
+            {/* <input
               id="deaths"
               type="radio"
               name="toggle"
@@ -332,7 +340,7 @@ function Timeseries() {
               checked={affectedType === AFFECTED_TYPE.RECOVERED}
               onChange={handleFilterChange}
             />
-            <label htmlFor="recovered">Recovered</label>
+            <label htmlFor="recovered">Recovered</label> */}
           </div>
         </div>
       </div>
