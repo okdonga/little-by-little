@@ -5,6 +5,7 @@ import mapboxgl from "mapbox-gl";
 import "./Default.css";
 import { AMPM, AFFECTED_TYPE, MONTHS, DATES } from "./constant";
 import { numberWithCommas } from './util/number';
+import { generateDates } from "./util/date";
 
 mapboxgl.accessToken = process.env.REACT_APP_MAPBOXGL_ACCESS_TOKEN;
 
@@ -28,6 +29,8 @@ const consoleStyle = {
   backgroundColor: "white"
 };
 
+const DEFAULT_DATE_FORMAT = 'M/D/YY';
+
 function Timeseries() {
   const mapContainer = useRef();
   const [mapProperty, setMapProperty] = useState({
@@ -37,7 +40,8 @@ function Timeseries() {
   });
   // const [time, setTime] = useState({ hour: 12, ampm: AMPM.PM });
   const [month, setMonth] = useState(0)
-  const [date, setDate]= useState(0); // DATES.length
+  const [dateIndex, setDateIndex]= useState(0); // DATES.length
+  const [dateRange, setDateRange] = useState(generateDates('2020-01-29', new Date(), DEFAULT_DATE_FORMAT));
   const [map, setMap] = useState(null);
   // TODO: rename this to layer 
   const [affectedType, setAffectedType] = useState(AFFECTED_TYPE.CONFIRMED);
@@ -110,7 +114,9 @@ function Timeseries() {
       });
 
       // change layer 
-      map.setFilter('confirmed', ['==', 'Date', DATES[0]]);
+      map.setFilter('confirmed', ['==', 'Date', dateRange[0]]);
+      // TODO: filter by when count is 0 
+
       // map.addLayer({
       //   id: "deaths",
       //   type: "circle",
@@ -242,8 +248,8 @@ function Timeseries() {
 
   function handleInputChange(e) {
     var idx = parseInt(e.target.value);
-    setDate(idx);
-    filterBy(DATES[idx])
+    setDateIndex(idx);
+    filterBy(dateRange[idx])
   }
 
   function filterBy(date) {
@@ -297,7 +303,7 @@ function Timeseries() {
           <h2>
             Date: {" "}
             <label id="active-hour">
-             {DATES[date]}
+             {dateRange[dateIndex]}
             </label>
           </h2>
           <input
@@ -305,9 +311,9 @@ function Timeseries() {
             className="row"
             type="range"
             min="0"
-            max={DATES.length-1}
+            max={dateRange.length-1}
             step="1"
-            value={date}
+            value={dateIndex}
             onChange={handleInputChange}
           />
         </div>
