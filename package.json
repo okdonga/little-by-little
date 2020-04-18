@@ -18,7 +18,8 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "parse:csv": "node ./scripts/csvToGeojson.js"
+    "parse:csv": "node ./scripts/csvToGeojson.js",
+    "update:submodule": "git submodule update"
   },
   "eslintConfig": {
     "extends": "react-app"
