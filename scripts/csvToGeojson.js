@@ -1,6 +1,8 @@
 const csvToJson = require('csvtojson');
 const fs = require('fs')
-const filename = 'time_series_covid19_confirmed_global';
+const input = process.argv[2].toLocaleLowerCase();
+
+const filename = `time_series_covid19_${input}_global`;
 
 let dateRanges = []; 
 
@@ -18,7 +20,7 @@ function testing(features, date, count, row) {
     }
 
     params['properties']["Date"] = date;
-    params['properties']["Confirmed"] = count
+    params['properties'][input] = count
 
     return params; 
 }
