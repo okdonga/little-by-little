@@ -11,7 +11,7 @@ mapboxgl.accessToken = process.env.REACT_APP_MAPBOXGL_ACCESS_TOKEN;
 
 const mapContainerStyle = {
   position: "relative",
-  height: "600px"
+  height: "100vh"
 };
 
 const mapStyle = {
@@ -22,12 +22,35 @@ const mapStyle = {
 };
 
 const consoleStyle = {
+  top: "0px",
   position: "absolute",
-  width: "240px",
+  width: "100vw",
+  backgroundColor: "gray",
+};
+
+const legendStyle = {
+  position: "absolute",
+  width: "50px",
+  height: "230px",
+  right: "20px",
+  top: "100px",
+  backgroundColor: "gray",
   margin: "10px",
   padding: "10px 20px",
-  backgroundColor: "white"
-};
+  textAlign: "center",
+  top: '50%',
+  transform: 'translateY(-50%)',
+}
+
+const inputRangeStyle = {
+  position: "absolute",
+  height: "40px",
+  bottom: "20px",
+  width: "100%",
+  margin: "20px 0px",
+  padding: "10px 0px",
+  backgroundColor: "gray"
+}
 
 const DEFAULT_DATE_FORMAT = 'M/D/YY';
 
@@ -38,7 +61,6 @@ function Timeseries() {
     lat: 40.7128,
     zoom: 3
   });
-  // const [time, setTime] = useState({ hour: 12, ampm: AMPM.PM });
   const [month, setMonth] = useState(0)
   const [dateIndex, setDateIndex]= useState(0); // DATES.length
   const [dateRange, setDateRange] = useState(generateDates('2020-01-29', new Date(), DEFAULT_DATE_FORMAT));
@@ -77,15 +99,64 @@ function Timeseries() {
         source: {
           type: "geojson",
           // data: "./data/collisions1601.geojson" // replace this with the url of your own geojson
-          data: "./data/time_series_covid19_confirmed_global.geojson" // replace this with the url of your own geojson
+          data: "./data/time_series_covid19_confirmed_global.geojson", // replace this with the url of your own geojson
+          // cluster: true,
+          // clusterMaxZoom: 14, // Max zoom to cluster points on
+          // clusterRadius: 50 // Radius of each cluster when clustering points (defaults to 50)
           //   type: "csv",
           //   data: "./data/time_series_19-covid-Confirmed.csv" // replace this with the url of your own geojson
         },
         paint: {
           "circle-radius": [
+            'interpolate', ['linear'], ["get", "confirmed"],
+            // confirmed count is 1000 (or less) -> circle radius will be 5px
+            100, 5, 
+            12500, 20,
+            50000, 30,
+            200000, 50, 
+            500000, 80, 
+            800000, 100
+          ],
+          "circle-color": [
             "interpolate",
             ["linear"],
-            ["number", ["get", "Confirmed"]],
+            ["number", ["get", "confirmed"]],
+            100,
+            "#FFA07A",
+            12500,
+            "#F08080",
+            50000,
+            "#CD5C5C",
+            200000,
+            "#DC143C",
+            500000,
+            "#B22222",
+            800000,
+            "#FF0000"
+          ],
+          //   "circle-opacity": 0.8,
+          "circle-opacity": 0.8
+        }
+      });
+
+      // change layer 
+      map.setFilter('confirmed', ['==', 'Date', dateRange[0]]);
+
+      map.addLayer({
+        id: "deaths",
+        type: "circle",
+        source: {
+          type: "geojson",
+          data: "./data/time_series_covid19_deaths_global.geojson",
+        },
+        layout: {
+          visibility: "none"
+        },
+        paint: {
+          "circle-radius": [
+            "interpolate",
+            ["linear"],
+            ["number", ["get", "deaths"]],
             0,
             4,
             5,
@@ -94,7 +165,7 @@ function Timeseries() {
           "circle-color": [
             "interpolate",
             ["linear"],
-            ["number", ["get", "Confirmed"]],
+            ["number", ["get", "deaths"]],
             0,
             "#2DC4B2",
             1,
@@ -108,52 +179,11 @@ function Timeseries() {
             5,
             "#AA5E79"
           ],
-          //   "circle-opacity": 0.8,
           "circle-opacity": 0.8
         }
       });
 
-      // change layer 
-      map.setFilter('confirmed', ['==', 'Date', dateRange[0]]);
-      // TODO: filter by when count is 0 
-
-      // map.addLayer({
-      //   id: "deaths",
-      //   type: "circle",
-      //   source: "corona",
-      //   layout: {
-      //     visibility: "none"
-      //   },
-      //   paint: {
-      //     "circle-radius": [
-      //       "interpolate",
-      //       ["linear"],
-      //       ["number", ["get", "Deaths"]],
-      //       0,
-      //       4,
-      //       5,
-      //       24
-      //     ],
-      //     "circle-color": [
-      //       "interpolate",
-      //       ["linear"],
-      //       ["number", ["get", "Deaths"]],
-      //       0,
-      //       "#2DC4B2",
-      //       1,
-      //       "#3BB3C3",
-      //       2,
-      //       "#669EC4",
-      //       3,
-      //       "#8B88B6",
-      //       4,
-      //       "#A2719B",
-      //       5,
-      //       "#AA5E79"
-      //     ],
-      //     "circle-opacity": 0.8
-      //   }
-      // });
+      map.setFilter('deaths', ['==', 'Date', dateRange[0]]);
 
       // map.addLayer({
       //   id: "recovered",
@@ -201,12 +231,11 @@ function Timeseries() {
     });
 
     map.on("mousemove",  e => {
-      console.log(e)
       var casualty = map.queryRenderedFeatures(e.point, {
+        layers: [AFFECTED_TYPE.CONFIRMED, AFFECTED_TYPE.DEATHS]
         // layers: [AFFECTED_TYPE.CONFIRMED, AFFECTED_TYPE.DEATHS, AFFECTED_TYPE.RECOVERED]
-        layers: [AFFECTED_TYPE.CONFIRMED]
+        // layers: [AFFECTED_TYPE.DEATHS]
       });
-
       if (casualty.length > 0) {
         var coordinates = casualty[0].geometry.coordinates.slice();
   
@@ -217,11 +246,14 @@ function Timeseries() {
           coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
         }
   
-        const { country_region, province_state, Confirmed, Deaths, Recovered, Date } = casualty[0].properties;
-  
+        const { country_region, province_state, confirmed, deaths, Recovered, Date } = casualty[0].properties;
+        let html = `<strong>${country_region}</strong><p>province_state: ${province_state}</br>`;
+        if (confirmed) html += `Confirmed(cumulative): ${confirmed && numberWithCommas(confirmed)}</br>`;
+        if (deaths) html += `Death: ${numberWithCommas(deaths)}</br>`
+        html += `Date: ${Date} </p>`;
         popup
         .setLngLat(coordinates)
-        .setHTML(`<strong>${country_region}</strong><p>province_state: ${province_state}</br>Confirmed: ${numberWithCommas(Confirmed)}</br>Date: ${Date}</p>`)
+        .setHTML(html)
         .addTo(map);
       } else {
         popup.remove();
@@ -256,59 +288,43 @@ function Timeseries() {
     var filters = ['==', 'Date', date];
     // change layer 
     map.setFilter(affectedType, filters);
-    // map.setFilter('corona', filters);
   }
  
          
   const { lng, lat, zoom } = mapProperty;
-
+  const currentDate = dateRange[dateIndex].split("/");
+  const thisMonth = currentDate[0]
+  const thisDay = currentDate[1]
   return (
     <div style={mapContainerStyle}>
       <div id="map" style={mapStyle} ref={el => (mapContainer.current = el)} />;
-      <div id="console" style={consoleStyle}>
-        <h1>COVID-19 Global Cases</h1>
-        <p>
-          Data:{" "}
-          <a href="https://covid-19.datasettes.com/">Johns Hopkins CSSE</a> from
-          Jan 2020
-        </p>
-
-        <div className="session">
-          <h2>{selectedRegion}</h2>
-          {countConfirmed !== null && (<h2>
-            <span>Confirmed: </span>{countConfirmed}
-          </h2>
-          )}
-          {countDeaths !== null && (
-            <h2>
-              <span>Deaths: </span>{countDeaths}
-            </h2>
-          )}
-          {countRecovered !== null && (
-            <h2>
-              <span>Recovered: </span>{countRecovered}
-            </h2>
-          )}
-          <div className="row colors"></div>
-          <div className="row labels">
-            <div className="label">0</div>
-            <div className="label">1</div>
-            <div className="label">2</div>
-            <div className="label">3</div>
-            <div className="label">4</div>
-            <div className="label">5+</div>
-          </div>
+      <div id="console" className="header" style={consoleStyle}>
+        <span className="title bold">COVID-19 Global Cases</span>{' '}
+        <span className="sub-text">(Data sourced from <a target="_blank" href="https://covid-19.datasettes.com/">Johns Hopkins CSSE)</a></span>{' '}
+        <div className="inline">
+          <button type="button" className={`button mr-2 click-layer ${affectedType === AFFECTED_TYPE.CONFIRMED ? "on" : "" }`} value={AFFECTED_TYPE.CONFIRMED} onClick={handleFilterChange} >{AFFECTED_TYPE.CONFIRMED.toUpperCase()}</button>
+          <button type="button" className={`button mr-2 click-layer ${affectedType === AFFECTED_TYPE.DEATHS ? "on" : "" }`} value={AFFECTED_TYPE.DEATHS} onClick={handleFilterChange} >{AFFECTED_TYPE.DEATHS.toUpperCase()}</button>
+          <button type="button" className="button click-layer">RECOVERED</button>
         </div>
-        <div className="session" id="sliderbar">
-          <h2>
-            Date: {" "}
-            <label id="active-hour">
-             {dateRange[dateIndex]}
-            </label>
-          </h2>
-          <input
+      </div>
+      <div id="legend" style={legendStyle}>
+        <div class="title">CASES</div>
+        <div>
+          <div><span class="dot"></span>1~100</div>
+          <div><span class="dot"></span>12.5K</div>
+          <div><span class="dot"></span>~50K</div>
+          <div><span class="dot"></span>~200K</div>
+          <div><span class="dot"></span>~500K</div>
+          <div><span class="dot"></span>~800K</div>
+        </div>
+      </div>
+      <div id="input-range" style={inputRangeStyle}>
+        <div class="current-date">
+          {thisMonth}.{thisDay}
+        </div>
+        <input
             id="date-slider"
-            className="row"
+            className="date-slider"
             type="range"
             min="0"
             max={dateRange.length-1}
@@ -316,39 +332,6 @@ function Timeseries() {
             value={dateIndex}
             onChange={handleInputChange}
           />
-        </div>
-        <div className="session">
-          <h2>Day of the week</h2>
-          <div className="row" id="filters">
-            <input
-              id="confirmed"
-              type="radio"
-              name="toggle"
-              value={AFFECTED_TYPE.CONFIRMED}
-              checked={affectedType === AFFECTED_TYPE.CONFIRMED}
-              onChange={handleFilterChange}
-            />
-            <label htmlFor="confirmed">Confirmed</label>
-            {/* <input
-              id="deaths"
-              type="radio"
-              name="toggle"
-              value={AFFECTED_TYPE.DEATHS}
-              checked={affectedType === AFFECTED_TYPE.DEATHS}
-              onChange={handleFilterChange}
-            />
-            <label htmlFor="deaths">Deaths</label>
-            <input
-              id="recovered"
-              type="radio"
-              name="toggle"
-              value={AFFECTED_TYPE.RECOVERED}
-              checked={affectedType === AFFECTED_TYPE.RECOVERED}
-              onChange={handleFilterChange}
-            />
-            <label htmlFor="recovered">Recovered</label> */}
-          </div>
-        </div>
       </div>
     </div>
   );
