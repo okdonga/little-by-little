@@ -1,6 +1,8 @@
 const csvToJson = require('csvtojson');
 const fs = require('fs')
 const input = process.argv[2].toLocaleLowerCase();
+const isValidInput = ['confirmed','deaths','recovered'];
+if (isValidInput.indexOf(input) < 0) throw "Parameter must be either confiremd, deaths, or recovered";
 
 const filename = `time_series_covid19_${input}_global`;
 
