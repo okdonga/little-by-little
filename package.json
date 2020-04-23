@@ -19,7 +19,9 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "parse:csv": "node ./scripts/csvToGeojson.js",
-    "update:submodule": "git submodule update"
+    "parse:all": "yarn run parse:csv confirmed && yarn run parse:csv deaths",
+    "update:submodule": "git submodule foreach git pull origin master",
+    "sync": "yarn run update:submodule && yarn run parse:all"
   },
   "eslintConfig": {
     "extends": "react-app"
