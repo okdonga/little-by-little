@@ -31,7 +31,7 @@ const consoleStyle = {
 const legendStyle = {
   position: "absolute",
   width: "50px",
-  height: "230px",
+  height: "295px",
   right: "20px",
   top: "100px",
   backgroundColor: "gray",
@@ -307,14 +307,14 @@ function Timeseries() {
           <button type="button" className="button click-layer">RECOVERED</button>
         </div>
       </div>
-      <div id="legend" style={legendStyle}>
-        <div class="title">CASES</div>
-        <div>
-          <div><span class="dot"></span>1~100</div>
-          <div><span class="dot"></span>12.5K</div>
-          <div><span class="dot"></span>~50K</div>
-          <div><span class="dot"></span>~200K</div>
-          <div><span class="dot"></span>~500K</div>
+      <div id="legend" className="legend" style={legendStyle}>
+        <div class="legend-title">CASES</div>
+        <div class="legend-list">
+          <div className="mb-2"><span class="dot"></span>1~100</div>
+          <div className="mb-2"><span class="dot"></span>~50K</div>
+          <div className="mb-2"><span class="dot"></span>12.5K</div>
+          <div className="mb-2"><span class="dot"></span>~200K</div>
+          <div className="mb-2"><span class="dot"></span>~500K</div>
           <div><span class="dot"></span>~800K</div>
         </div>
       </div>

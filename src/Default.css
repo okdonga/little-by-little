@@ -1,3 +1,12 @@
+:root {
+  --legend-color-1: #FFA07A;
+  --legend-color-2: #F08080;
+  --legend-color-3: #CD5C5C;
+  --legend-color-4: #DC143C;
+  --legend-color-5: #B22222;
+  --legend-color-6: #FF0000;
+}
+
 body {
   margin: 0;
   padding: 0;
@@ -50,9 +59,19 @@ body {
   margin-right: 0.25rem !important;
 }
 
+.mb-1 {
+  margin-bottom: 0.25rem !important;
+}
+
 .mr-2 {
   margin-right: 0.5rem !important;
 }
+
+.mb-2 {
+  margin-bottom: 0.5rem !important;
+}
+
+
 
 a {
   text-decoration: none;
@@ -62,9 +81,38 @@ a {
 .dot {
   height: 14px;
   width: 14px;
-  background-color: #FFA07A;
   border-radius: 50%;
   display: inline-block;
+}
+
+.legend-title {
+  font-weight: bold;
+  margin-top: 0.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.legend-list div:nth-child(1) .dot {
+  background-color: var(--legend-color-1);
+}
+
+.legend-list div:nth-child(2) .dot {
+  background-color: var(--legend-color-2);
+}
+
+.legend-list div:nth-child(3) .dot {
+  background-color: var(--legend-color-3);
+}
+
+.legend-list div:nth-child(4) .dot {
+  background-color: var(--legend-color-4);
+}
+
+.legend-list div:nth-child(5) .dot {
+  background-color: var(--legend-color-5);
+}
+
+.legend-list div:nth-child(6) .dot {
+  background-color: var(--legend-color-6);
 }
 
 input[type=range] {
