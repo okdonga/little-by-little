@@ -33,7 +33,6 @@ const legendStyle = {
   width: "50px",
   height: "295px",
   right: "20px",
-  top: "100px",
   backgroundColor: "gray",
   margin: "10px",
   padding: "10px 20px",
@@ -61,16 +60,12 @@ function Timeseries() {
     lat: 40.7128,
     zoom: 3
   });
-  const [month, setMonth] = useState(0)
+
   const [dateIndex, setDateIndex]= useState(0); // DATES.length
   const [dateRange, setDateRange] = useState(generateDates('2020-01-29', new Date(), DEFAULT_DATE_FORMAT));
   const [map, setMap] = useState(null);
   // TODO: rename this to layer 
   const [affectedType, setAffectedType] = useState(AFFECTED_TYPE.CONFIRMED);
-  const [selectedRegion, setSelectedRegion] = useState(null);
-  const [countConfirmed, setCountConfirmed] = useState(null);
-  const [countDeaths, setCountDeaths] = useState(null);
-  const [countRecovered, setCountRecovered] = useState(null);
 
   useEffect(() => {
     const { lat, lng, zoom } = mapProperty;
@@ -246,7 +241,7 @@ function Timeseries() {
           coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
         }
   
-        const { country_region, province_state, confirmed, deaths, Recovered, Date } = casualty[0].properties;
+        const { country_region, province_state, confirmed, deaths, Date } = casualty[0].properties;
         let html = `<strong>${country_region}</strong><p>province_state: ${province_state}</br>`;
         if (confirmed) html += `Confirmed(cumulative): ${confirmed && numberWithCommas(confirmed)}</br>`;
         if (deaths) html += `Death: ${numberWithCommas(deaths)}</br>`
@@ -290,8 +285,6 @@ function Timeseries() {
     map.setFilter(affectedType, filters);
   }
  
-         
-  const { lng, lat, zoom } = mapProperty;
   const currentDate = dateRange[dateIndex].split("/");
   const thisMonth = currentDate[0]
   const thisDay = currentDate[1]
@@ -300,7 +293,7 @@ function Timeseries() {
       <div id="map" style={mapStyle} ref={el => (mapContainer.current = el)} />;
       <div id="console" className="header" style={consoleStyle}>
         <span className="title bold">COVID-19 Global Cases</span>{' '}
-        <span className="sub-text">(Data sourced from <a target="_blank" href="https://covid-19.datasettes.com/">Johns Hopkins CSSE)</a></span>{' '}
+        <span className="sub-text">(Data sourced from <a target="_blank"  rel="noopener noreferrer" href="https://covid-19.datasettes.com/">Johns Hopkins CSSE)</a></span>{' '}
         <div className="inline">
           <button type="button" className={`button mr-2 click-layer ${affectedType === AFFECTED_TYPE.CONFIRMED ? "on" : "" }`} value={AFFECTED_TYPE.CONFIRMED} onClick={handleFilterChange} >{AFFECTED_TYPE.CONFIRMED.toUpperCase()}</button>
           <button type="button" className={`button mr-2 click-layer ${affectedType === AFFECTED_TYPE.DEATHS ? "on" : "" }`} value={AFFECTED_TYPE.DEATHS} onClick={handleFilterChange} >{AFFECTED_TYPE.DEATHS.toUpperCase()}</button>
