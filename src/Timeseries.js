@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import mapboxgl from "mapbox-gl";
 import "./Default.css";
-import { AFFECTED_TYPE } from "./constant";
+import { AFFECTED_TYPE, FILENAME, LAYER_TYPE } from "./constant";
 import { numberWithCommas } from './util/number';
 import { generateDates } from "./util/date";
 
@@ -94,7 +94,7 @@ function Timeseries() {
         source: {
           type: "geojson",
           // data: "./data/collisions1601.geojson" // replace this with the url of your own geojson
-          data: "./data/time_series_covid19_confirmed_global.geojson", // replace this with the url of your own geojson
+          data: FILENAME[LAYER_TYPE.CONFIRMED], // replace this with the url of your own geojson
           // cluster: true,
           // clusterMaxZoom: 14, // Max zoom to cluster points on
           // clusterRadius: 50 // Radius of each cluster when clustering points (defaults to 50)
@@ -135,14 +135,14 @@ function Timeseries() {
       });
 
       // change layer 
-      map.setFilter('confirmed', ['==', 'Date', dateRange[0]]);
+      map.setFilter("confirmed", ['==', 'Date', dateRange[0]]);
 
       map.addLayer({
         id: "deaths",
         type: "circle",
         source: {
           type: "geojson",
-          data: "./data/time_series_covid19_deaths_global.geojson",
+          data: FILENAME[LAYER_TYPE.DEATHS],
         },
         layout: {
           visibility: "none"
@@ -178,7 +178,7 @@ function Timeseries() {
         }
       });
 
-      map.setFilter('deaths', ['==', 'Date', dateRange[0]]);
+      map.setFilter("deaths", ['==', 'Date', dateRange[0]]);
 
       // map.addLayer({
       //   id: "recovered",
@@ -295,24 +295,25 @@ function Timeseries() {
         <span className="title bold">COVID-19 Global Cases</span>{' '}
         <span className="sub-text">(Data sourced from <a target="_blank"  rel="noopener noreferrer" href="https://covid-19.datasettes.com/">Johns Hopkins CSSE)</a></span>{' '}
         <div className="inline">
+        <button type="button" className={`button mr-2 click-layer`} value={'DAILY'} >{'DAILY'}</button>
           <button type="button" className={`button mr-2 click-layer ${affectedType === AFFECTED_TYPE.CONFIRMED ? "on" : "" }`} value={AFFECTED_TYPE.CONFIRMED} onClick={handleFilterChange} >{AFFECTED_TYPE.CONFIRMED.toUpperCase()}</button>
           <button type="button" className={`button mr-2 click-layer ${affectedType === AFFECTED_TYPE.DEATHS ? "on" : "" }`} value={AFFECTED_TYPE.DEATHS} onClick={handleFilterChange} >{AFFECTED_TYPE.DEATHS.toUpperCase()}</button>
           <button type="button" className="button click-layer">RECOVERED</button>
         </div>
       </div>
       <div id="legend" className="legend" style={legendStyle}>
-        <div class="legend-title">CASES</div>
-        <div class="legend-list">
-          <div className="mb-2"><span class="dot"></span>1~100</div>
-          <div className="mb-2"><span class="dot"></span>~50K</div>
-          <div className="mb-2"><span class="dot"></span>12.5K</div>
-          <div className="mb-2"><span class="dot"></span>~200K</div>
-          <div className="mb-2"><span class="dot"></span>~500K</div>
-          <div><span class="dot"></span>~800K</div>
+        <div className="legend-title">CASES</div>
+        <div className="legend-list">
+          <div className="mb-2"><span className="dot"></span>1~100</div>
+          <div className="mb-2"><span className="dot"></span>~50K</div>
+          <div className="mb-2"><span className="dot"></span>12.5K</div>
+          <div className="mb-2"><span className="dot"></span>~200K</div>
+          <div className="mb-2"><span className="dot"></span>~500K</div>
+          <div><span className="dot"></span>~800K</div>
         </div>
       </div>
       <div id="input-range" style={inputRangeStyle}>
-        <div class="current-date">
+        <div className="current-date">
           {thisMonth}.{thisDay}
         </div>
         <input
