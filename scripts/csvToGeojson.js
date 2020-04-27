@@ -9,42 +9,21 @@ const LAYER_TYPE = {
     RECOVERED: "recovered",
 }
 
-const isValidInput = [LAYER_TYPE.CONFIRMED,LAYER_TYPE.DEATHS,LAYER_TYPE.RECOVERED];
+const isValidInput = [LAYER_TYPE.CONFIRMED,LAYER_TYPE.DEATHS,LAYER_TYPE.RECOVERED, LAYER_TYPE.DAILY];
 
-if (isValidInput.indexOf(input) < 0) throw "Parameter must be either confiremd, deaths, or recovered";
+if (isValidInput.indexOf(input) < 0) throw "Parameter must be either confiremd, deaths, recovered or daily";
 
 function fileInfo(input) {
     switch(input) {
         case LAYER_TYPE.DAILY: 
             return {
-                in: '',
-                out: ''
+                in: `./COVID-19/csse_covid_19_data/csse_covid_19_daily_reports/04-22-2020.csv`,
+                out: `public/data/time_series_covid19_${input}_global.geojson`
             }
         default: 
             return {
                 in: `./COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_${input}_global.csv`,
                 out: `public/data/time_series_covid19_${input}_global.geojson`
-            }
-    }
-}
-
-function getGeojsonProperties(layer) {
-    switch(layer) {
-        case LAYER_TYPE.DAILY: 
-            return {
-                COUNTRY: "Country_Region",
-                PROVINCE: "Province_State",
-                LONG:  "Long_", 
-                LAT: "Lat",
-                DATE: "Date",
-            }
-        default: 
-            return {
-                COUNTRY: "Country/Region",
-                PROVINCE: "Province/State",
-                LONG:  "Long", 
-                LAT: "Lat",
-                DATE: "Date",
             }
     }
 }
@@ -90,21 +69,43 @@ const processFile = async () => {
     }).fromFile(filename.in);
     const features = []  
     await asyncForEach(rawData, async(row) => {
-        await asyncForEach(dateRanges, async (date) => {
-            try {
-              const count = +row[date]
-              if (count > 0) {
-                const res = await makeGeoJson(features,  date, count, row)
-                features.push({...res})
-              }
-            } catch(err) {
-                console.log(err)
+        if (input === LAYER_TYPE.DAILY) {
+            let params = {
+                "type": "Feature",
+                "properties": {
+                    "country_region": row["Country_Region"],
+                    "province_state": row["Province_State"],
+                    "confirmed": +row["Confirmed"],
+                    "deaths": +row["Deaths"],
+                    "recovered": +row["Recovered"],
+                    "active": +row["Active"],
+                    "Date": "04-22-2020",
+                },
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [row['Long_'], row['Lat']]
+                }
             }
-        })       
+            
+            features.push(params);
+        } else {
+            await asyncForEach(dateRanges, async (date) => {
+                try {
+                  const count = +row[date]
+                  if (count > 0) {
+                    const res = await makeGeoJson(features,  date, count, row)
+                    features.push({...res})
+                  }
+                } catch(err) {
+                    console.log(err)
+                }
+            })       
+        }
     });
 
     const geojsonOutput = { "type": "FeatureCollection", features }
     fs.writeFileSync(filename.out, JSON.stringify(geojsonOutput), 'utf8')
 };
+
 
 processFile();

@@ -64,7 +64,7 @@ function Timeseries() {
   const [dateIndex, setDateIndex]= useState(0);
   const [dateRange, setDateRange] = useState(generateDates('2020-01-29', new Date(), DEFAULT_DATE_FORMAT));
   const [map, setMap] = useState(null);
-  const [layer, setLayer] = useState(LAYER_TYPE.CONFIRMED);
+  const [layer, setLayer] = useState(LAYER_TYPE.DAILY);
 
   useEffect(() => {
     const { lat, lng, zoom } = mapProperty;
@@ -89,16 +89,12 @@ function Timeseries() {
       map.addLayer({
         id: "confirmed",
         type: "circle",
-        // source: "corona",
         source: {
           type: "geojson",
-          // data: "./data/collisions1601.geojson" // replace this with the url of your own geojson
-          data: FILENAME[LAYER_TYPE.CONFIRMED], // replace this with the url of your own geojson
-          // cluster: true,
-          // clusterMaxZoom: 14, // Max zoom to cluster points on
-          // clusterRadius: 50 // Radius of each cluster when clustering points (defaults to 50)
-          //   type: "csv",
-          //   data: "./data/time_series_19-covid-Confirmed.csv" // replace this with the url of your own geojson
+          data: FILENAME[LAYER_TYPE.CONFIRMED],
+        },
+        layout: {
+          visibility: "none"
         },
         paint: {
           "circle-radius": [
@@ -179,6 +175,46 @@ function Timeseries() {
 
       map.setFilter("deaths", ['==', 'Date', dateRange[0]]);
 
+      map.addLayer({
+        id: "daily",
+        type: "circle",
+        source: {
+          type: "geojson",
+          data: FILENAME[LAYER_TYPE.DAILY],
+        },
+        paint: {
+          "circle-radius": [
+            'interpolate', ['linear'], ["get", "active"],
+            // confirmed count is 1000 (or less) -> circle radius will be 5px
+            100, 5, 
+            12500, 20,
+            50000, 30,
+            200000, 50, 
+            500000, 80, 
+            800000, 100
+          ],
+          "circle-color": [
+            "interpolate",
+            ["linear"],
+            ["number", ["get", "active"]],
+            100,
+            "#FFA07A",
+            12500,
+            "#F08080",
+            50000,
+            "#CD5C5C",
+            200000,
+            "#DC143C",
+            500000,
+            "#B22222",
+            800000,
+            "#FF0000"
+          ],
+          //   "circle-opacity": 0.8,
+          "circle-opacity": 0.8
+        }
+      });
+
       // map.addLayer({
       //   id: "recovered",
       //   type: "circle",
@@ -226,7 +262,7 @@ function Timeseries() {
 
     map.on("mousemove",  e => {
       var casualty = map.queryRenderedFeatures(e.point, {
-        layers: [LAYER_TYPE.CONFIRMED, LAYER_TYPE.DEATHS]
+        layers: [LAYER_TYPE.CONFIRMED, LAYER_TYPE.DEATHS, LAYER_TYPE.DAILY]
         // layers: [LAYER_TYPE.CONFIRMED, LAYER_TYPE.DEATHS, LAYER_TYPE.RECOVERED]
         // layers: [LAYER_TYPE.DEATHS]
       });
@@ -240,10 +276,12 @@ function Timeseries() {
           coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
         }
   
-        const { country_region, province_state, confirmed, deaths, Date } = casualty[0].properties;
+        const { country_region, province_state, confirmed, deaths, Date, active, recovered} = casualty[0].properties;
         let html = `<strong>${country_region}</strong><p>province_state: ${province_state}</br>`;
-        if (confirmed) html += `Confirmed(cumulative): ${confirmed && numberWithCommas(confirmed)}</br>`;
-        if (deaths) html += `Death: ${numberWithCommas(deaths)}</br>`
+        if (confirmed) html += `Confirmed(cumulative): ${numberWithCommas(confirmed)}</br>`;
+        if (recovered) html += `recovered: ${numberWithCommas(recovered)}</br>`;
+        if (deaths) html += `Death: ${numberWithCommas(deaths)}</br>`;
+        if (active) html += `<hr/>Active: ${numberWithCommas(active)}</br>`;
         html += `Date: ${Date} </p>`;
         popup
         .setLngLat(coordinates)
@@ -294,7 +332,7 @@ function Timeseries() {
         <span className="title bold">COVID-19 Global Cases</span>{' '}
         <span className="sub-text">(Data sourced from <a target="_blank"  rel="noopener noreferrer" href="https://covid-19.datasettes.com/">Johns Hopkins CSSE)</a></span>{' '}
         <div className="inline">
-        <button type="button" className={`button mr-2 click-layer`} value={'DAILY'} >{'DAILY'}</button>
+        <button type="button" className={`button mr-2 click-layer ${layer === LAYER_TYPE.DAILY ? "on" : "" }` } value={LAYER_TYPE.DAILY} onClick={handleFilterChange}>LIVE!</button>
           <button type="button" className={`button mr-2 click-layer ${layer === LAYER_TYPE.CONFIRMED ? "on" : "" }`} value={LAYER_TYPE.CONFIRMED} onClick={handleFilterChange} >{LAYER_TYPE.CONFIRMED.toUpperCase()}</button>
           <button type="button" className={`button mr-2 click-layer ${layer === LAYER_TYPE.DEATHS ? "on" : "" }`} value={LAYER_TYPE.DEATHS} onClick={handleFilterChange} >{LAYER_TYPE.DEATHS.toUpperCase()}</button>
           <button type="button" className="button click-layer">RECOVERED</button>

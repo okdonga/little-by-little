@@ -6,6 +6,7 @@ export const LAYER_TYPE = {
 }
 
 export const FILENAME = {
+  [LAYER_TYPE.DAILY]: './data/time_series_covid19_daily_global.geojson',
   [LAYER_TYPE.CONFIRMED]: './data/time_series_covid19_confirmed_global.geojson',
   [LAYER_TYPE.DEATHS]: './data/time_series_covid19_deaths_global.geojson'
 }
