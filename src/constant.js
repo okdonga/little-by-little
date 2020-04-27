@@ -1,12 +1,6 @@
-export const AFFECTED_TYPE = {
-  CONFIRMED: "confirmed",
-  DEATHS: "deaths",
-  // RECOVERED: "recovered"
-};
-
 export const LAYER_TYPE = {
   DAILY: "daily",
-  CONFIRMED: "confiremd", 
+  CONFIRMED: "confirmed", 
   DEATHS: "deaths",
   RECOVERED: "recovered",
 }

@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import mapboxgl from "mapbox-gl";
 import "./Default.css";
-import { AFFECTED_TYPE, FILENAME, LAYER_TYPE } from "./constant";
+import { FILENAME, LAYER_TYPE } from "./constant";
 import { numberWithCommas } from './util/number';
 import { generateDates } from "./util/date";
 
@@ -61,11 +61,10 @@ function Timeseries() {
     zoom: 3
   });
 
-  const [dateIndex, setDateIndex]= useState(0); // DATES.length
+  const [dateIndex, setDateIndex]= useState(0);
   const [dateRange, setDateRange] = useState(generateDates('2020-01-29', new Date(), DEFAULT_DATE_FORMAT));
   const [map, setMap] = useState(null);
-  // TODO: rename this to layer 
-  const [affectedType, setAffectedType] = useState(AFFECTED_TYPE.CONFIRMED);
+  const [layer, setLayer] = useState(LAYER_TYPE.CONFIRMED);
 
   useEffect(() => {
     const { lat, lng, zoom } = mapProperty;
@@ -227,9 +226,9 @@ function Timeseries() {
 
     map.on("mousemove",  e => {
       var casualty = map.queryRenderedFeatures(e.point, {
-        layers: [AFFECTED_TYPE.CONFIRMED, AFFECTED_TYPE.DEATHS]
-        // layers: [AFFECTED_TYPE.CONFIRMED, AFFECTED_TYPE.DEATHS, AFFECTED_TYPE.RECOVERED]
-        // layers: [AFFECTED_TYPE.DEATHS]
+        layers: [LAYER_TYPE.CONFIRMED, LAYER_TYPE.DEATHS]
+        // layers: [LAYER_TYPE.CONFIRMED, LAYER_TYPE.DEATHS, LAYER_TYPE.RECOVERED]
+        // layers: [LAYER_TYPE.DEATHS]
       });
       if (casualty.length > 0) {
         var coordinates = casualty[0].geometry.coordinates.slice();
@@ -262,13 +261,13 @@ function Timeseries() {
 
   function handleFilterChange(e) {
     var type = e.target.value;
-    setAffectedType(type);
+    setLayer(type);
 
-    for (const property in AFFECTED_TYPE) {
-      if (AFFECTED_TYPE[property] === type) {
-        map.setLayoutProperty(AFFECTED_TYPE[property], "visibility", "visible");
+    for (const property in LAYER_TYPE) {
+      if (LAYER_TYPE[property] === type) {
+        map.setLayoutProperty(LAYER_TYPE[property], "visibility", "visible");
       } else {
-        map.setLayoutProperty(AFFECTED_TYPE[property], "visibility", "none");
+        map.setLayoutProperty(LAYER_TYPE[property], "visibility", "none");
       }
     }
   }
@@ -282,7 +281,7 @@ function Timeseries() {
   function filterBy(date) {
     var filters = ['==', 'Date', date];
     // change layer 
-    map.setFilter(affectedType, filters);
+    map.setFilter(layer, filters);
   }
  
   const currentDate = dateRange[dateIndex].split("/");
@@ -296,8 +295,8 @@ function Timeseries() {
         <span className="sub-text">(Data sourced from <a target="_blank"  rel="noopener noreferrer" href="https://covid-19.datasettes.com/">Johns Hopkins CSSE)</a></span>{' '}
         <div className="inline">
         <button type="button" className={`button mr-2 click-layer`} value={'DAILY'} >{'DAILY'}</button>
-          <button type="button" className={`button mr-2 click-layer ${affectedType === AFFECTED_TYPE.CONFIRMED ? "on" : "" }`} value={AFFECTED_TYPE.CONFIRMED} onClick={handleFilterChange} >{AFFECTED_TYPE.CONFIRMED.toUpperCase()}</button>
-          <button type="button" className={`button mr-2 click-layer ${affectedType === AFFECTED_TYPE.DEATHS ? "on" : "" }`} value={AFFECTED_TYPE.DEATHS} onClick={handleFilterChange} >{AFFECTED_TYPE.DEATHS.toUpperCase()}</button>
+          <button type="button" className={`button mr-2 click-layer ${layer === LAYER_TYPE.CONFIRMED ? "on" : "" }`} value={LAYER_TYPE.CONFIRMED} onClick={handleFilterChange} >{LAYER_TYPE.CONFIRMED.toUpperCase()}</button>
+          <button type="button" className={`button mr-2 click-layer ${layer === LAYER_TYPE.DEATHS ? "on" : "" }`} value={LAYER_TYPE.DEATHS} onClick={handleFilterChange} >{LAYER_TYPE.DEATHS.toUpperCase()}</button>
           <button type="button" className="button click-layer">RECOVERED</button>
         </div>
       </div>
