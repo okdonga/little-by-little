@@ -1,8 +1,8 @@
 export const LAYER_TYPE = {
-  DAILY: "daily",
+  // DAILY: "daily",
   CONFIRMED: "confirmed", 
   DEATHS: "deaths",
-  RECOVERED: "recovered",
+  // RECOVERED: "recovered",
 }
 
 export const FILENAME = {

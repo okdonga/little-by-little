@@ -64,7 +64,7 @@ function Timeseries() {
   const [dateIndex, setDateIndex]= useState(0);
   const [dateRange, setDateRange] = useState(generateDates('2020-01-29', new Date(), DEFAULT_DATE_FORMAT));
   const [map, setMap] = useState(null);
-  const [layer, setLayer] = useState(LAYER_TYPE.DAILY);
+  const [layer, setLayer] = useState(LAYER_TYPE.CONFIRMED);
 
   useEffect(() => {
     const { lat, lng, zoom } = mapProperty;
@@ -92,9 +92,6 @@ function Timeseries() {
         source: {
           type: "geojson",
           data: FILENAME[LAYER_TYPE.CONFIRMED],
-        },
-        layout: {
-          visibility: "none"
         },
         paint: {
           "circle-radius": [
@@ -262,7 +259,7 @@ function Timeseries() {
 
     map.on("mousemove",  e => {
       var casualty = map.queryRenderedFeatures(e.point, {
-        layers: [LAYER_TYPE.CONFIRMED, LAYER_TYPE.DEATHS, LAYER_TYPE.DAILY]
+        layers: [LAYER_TYPE.CONFIRMED, LAYER_TYPE.DEATHS]
         // layers: [LAYER_TYPE.CONFIRMED, LAYER_TYPE.DEATHS, LAYER_TYPE.RECOVERED]
         // layers: [LAYER_TYPE.DEATHS]
       });

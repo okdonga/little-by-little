@@ -4,7 +4,7 @@ const input = process.argv[2].toLocaleLowerCase();
 
 const LAYER_TYPE = {
     DAILY: "daily",
-    CONFIRMED: "confiremd", 
+    CONFIRMED: "confirmed", 
     DEATHS: "deaths",
     RECOVERED: "recovered",
 }
@@ -28,22 +28,21 @@ function fileInfo(input) {
     }
 }
 
-function makeGeoJson(features, date, count, row) {
+function makeGeoJson(date, count, row, prevCount) {
     let params = {
         "type": "Feature",
         "properties": {
             "country_region": row["Country/Region"],
             "province_state": row["Province/State"],
+            "Date": date,
+            [input]: count,
+            "change": count-prevCount
         },
         "geometry": {
             "type": "Point",
             "coordinates": [row['Long'], row['Lat']]
         }
     }
-
-    params['properties']["Date"] = date;
-    params['properties'][input] = count
-
     return params; 
 }
 
@@ -89,11 +88,12 @@ const processFile = async () => {
             
             features.push(params);
         } else {
-            await asyncForEach(dateRanges, async (date) => {
+            await asyncForEach(dateRanges, async (date, index) => {
                 try {
                   const count = +row[date]
+                  const prevCount = +row[dateRanges[index-1]]
                   if (count > 0) {
-                    const res = await makeGeoJson(features,  date, count, row)
+                    const res = await makeGeoJson(date, count, row, prevCount)
                     features.push({...res})
                   }
                 } catch(err) {
