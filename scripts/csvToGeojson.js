@@ -17,7 +17,7 @@ function fileInfo(input) {
     switch(input) {
         case LAYER_TYPE.DAILY: 
             return {
-                in: `./COVID-19/csse_covid_19_data/csse_covid_19_daily_reports/04-22-2020.csv`,
+                in: `./COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_${LAYER_TYPE.CONFIRMED}_global.csv`,
                 out: `public/data/time_series_covid19_${input}_global.geojson`
             }
         default: 
@@ -28,7 +28,7 @@ function fileInfo(input) {
     }
 }
 
-function makeGeoJson(date, count, row, prevCount) {
+function makeGeoJson(date, count, row, change) {
     let params = {
         "type": "Feature",
         "properties": {
@@ -36,7 +36,7 @@ function makeGeoJson(date, count, row, prevCount) {
             "province_state": row["Province/State"],
             "Date": date,
             [input]: count,
-            "change": count-prevCount
+            "change": change
         },
         "geometry": {
             "type": "Point",
@@ -69,31 +69,43 @@ const processFile = async () => {
     const features = []  
     await asyncForEach(rawData, async(row) => {
         if (input === LAYER_TYPE.DAILY) {
-            let params = {
-                "type": "Feature",
-                "properties": {
-                    "country_region": row["Country_Region"],
-                    "province_state": row["Province_State"],
-                    "confirmed": +row["Confirmed"],
-                    "deaths": +row["Deaths"],
-                    "recovered": +row["Recovered"],
-                    "active": +row["Active"],
-                    "Date": "04-22-2020",
-                },
-                "geometry": {
-                    "type": "Point",
-                    "coordinates": [row['Long_'], row['Lat']]
+            await asyncForEach(dateRanges, async (date, index) => {
+                try {
+                    
+                  const count = +row[date];
+                  const prevCount = +row[dateRanges[index-1]];
+                  const change = count - prevCount;
+                  
+                  if (!isNaN(change)) {
+                    const params = {
+                        "type": "Feature",
+                        "properties": {
+                            "country_region": row["Country/Region"],
+                            "province_state": row["Province/State"],
+                            "Date": date,
+                            "change": "" + change,
+                        },
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [row['Long'], row['Lat']]
+                        }
+                      }
+                      
+                      features.push(params)
+                  }
+                  
+                } catch(err) {
+                    console.log(err)
                 }
-            }
-            
-            features.push(params);
+            })   
         } else {
             await asyncForEach(dateRanges, async (date, index) => {
                 try {
                   const count = +row[date]
-                  const prevCount = +row[dateRanges[index-1]]
+                  const prevCount = +row[dateRanges[index-1]];
+                  const change = count - prevCount;
                   if (count > 0) {
-                    const res = await makeGeoJson(date, count, row, prevCount)
+                    const res = await makeGeoJson(date, count, row, change)
                     features.push({...res})
                   }
                 } catch(err) {
