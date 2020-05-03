@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import mapboxgl from "mapbox-gl";
 import "./Default.css";
-import { FILENAME, LAYER_TYPE } from "./constant";
+import { FILENAME, LAYER_TYPE, LEGION_COLORS, LEGION_RANGE } from "./constant";
 import { numberWithCommas } from './util/number';
 import { generateDates } from "./util/date";
 
@@ -85,6 +85,80 @@ function Timeseries() {
       //   // data: "./data/03-17-2020.geojson" // replace this with the url of your own geojson
       //   data: "./data/time_series_covid19_confirmed_global.geojson" // replace this with the url of your own geojson
       // });
+      map.addLayer({
+        id: 'daily',
+        type: 'symbol',
+        // type: "circle",
+        source: {
+          type: "geojson",
+          data: FILENAME[LAYER_TYPE.DAILY],
+        },
+        // paint: {
+        //   "circle-radius": [
+        //     'interpolate', ['linear'], ["get", "change"],
+        //     // confirmed count is 1000 (or less) -> circle radius will be 5px
+        //     100, 5, 
+        //     12500, 20,
+        //     50000, 30,
+        //     200000, 50, 
+        //     500000, 80, 
+        //     800000, 100
+        //   ],
+        //   "circle-color": [
+        //     "interpolate",
+        //     ["linear"],
+        //     ["number", ["get", "change"]],
+        //     100,
+        //     "#FFA07A",
+        //     12500,
+        //     "#F08080",
+        //     50000,
+        //     "#CD5C5C",
+        //     200000,
+        //     "#DC143C",
+        //     500000,
+        //     "#B22222",
+        //     800000,
+        //     "#FF0000"
+        //   ],
+        //   //   "circle-opacity": 0.8,
+        //   "circle-opacity": 0.8
+        // }
+        paint: {
+          "text-color": "#ffffff"
+        },
+        layout: {
+          // 'text-field': ['get', 'country_region'],
+          'text-field': ['format', ['upcase', ['get', 'country_region']], { 'font-scale': 0.8 },
+          '\n',
+          {},
+             ['downcase', ['get', 'change']],
+            { 'font-scale': 0.8 }
+        ], 
+          // 'text-variable-anchor': ['top', 'bottom', 'left', 'right'],
+          // 'text-radial-offset': 0.5,
+          // 'text-justify': 'auto',
+          
+          // 'icon-image': ['concat', ['get', 'icon'], '-15']
+          'icon-image': 'tw-provincial-2',
+          // 'text-field': [
+          //   'format',
+          //   ['upcase', ['get', 'country_region']],
+          //   { 'font-scale': 0.8 },
+          //   '\n',
+          //   {},
+          //   ['downcase', ['get', 'change']],
+          //   { 'font-scale': 0.6 }
+          // ],
+          'text-font': ['Open Sans Semibold', 'Arial Unicode MS Bold'],
+          'text-offset': [0, 0.6],
+          'text-anchor': 'top'
+        },
+        // "filter": [">", "change", 0]
+      });
+
+      map.setFilter("daily", ['==', 'Date', dateRange[0]]);
+  
 
       map.addLayer({
         id: "confirmed",
@@ -97,31 +171,30 @@ function Timeseries() {
           "circle-radius": [
             'interpolate', ['linear'], ["get", "confirmed"],
             // confirmed count is 1000 (or less) -> circle radius will be 5px
-            100, 5, 
-            12500, 20,
-            50000, 30,
-            200000, 50, 
-            500000, 80, 
-            800000, 100
+            LEGION_RANGE.CASE_1.COUNT_CONFIRMED, LEGION_RANGE.CASE_1.RADIUS, 
+            LEGION_RANGE.CASE_2.COUNT_CONFIRMED, LEGION_RANGE.CASE_2.RADIUS, 
+            LEGION_RANGE.CASE_3.COUNT_CONFIRMED, LEGION_RANGE.CASE_3.RADIUS, 
+            LEGION_RANGE.CASE_4.COUNT_CONFIRMED, LEGION_RANGE.CASE_4.RADIUS, 
+            LEGION_RANGE.CASE_5.COUNT_CONFIRMED, LEGION_RANGE.CASE_5.RADIUS, 
+            LEGION_RANGE.CASE_6.COUNT_CONFIRMED, LEGION_RANGE.CASE_6.RADIUS, 
           ],
           "circle-color": [
             "interpolate",
             ["linear"],
             ["number", ["get", "confirmed"]],
-            100,
-            "#FFA07A",
-            12500,
-            "#F08080",
-            50000,
-            "#CD5C5C",
-            200000,
-            "#DC143C",
-            500000,
-            "#B22222",
-            800000,
-            "#FF0000"
+            LEGION_RANGE.CASE_1.COUNT_CONFIRMED,
+            LEGION_COLORS.PART_1,
+            LEGION_RANGE.CASE_2.COUNT_CONFIRMED,
+            LEGION_COLORS.PART_2,
+            LEGION_RANGE.CASE_3.COUNT_CONFIRMED,
+            LEGION_COLORS.PART_3,
+            LEGION_RANGE.CASE_4.COUNT_CONFIRMED,
+            LEGION_COLORS.PART_4,
+            LEGION_RANGE.CASE_5.COUNT_CONFIRMED,
+            LEGION_COLORS.PART_5,
+            LEGION_RANGE.CASE_6.COUNT_CONFIRMED,
+            LEGION_COLORS.PART_6,
           ],
-          //   "circle-opacity": 0.8,
           "circle-opacity": 0.8
         }
       });
@@ -273,12 +346,14 @@ function Timeseries() {
           coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
         }
   
-        const { country_region, province_state, confirmed, deaths, Date, active, recovered} = casualty[0].properties;
+        const { country_region, province_state, confirmed, deaths, Date, active, recovered, change } = casualty[0].properties;
         let html = `<strong>${country_region}</strong><p>province_state: ${province_state}</br>`;
         if (confirmed) html += `Confirmed(cumulative): ${numberWithCommas(confirmed)}</br>`;
         if (recovered) html += `recovered: ${numberWithCommas(recovered)}</br>`;
         if (deaths) html += `Death: ${numberWithCommas(deaths)}</br>`;
+        if (change) html += `Change: ${numberWithCommas(change)}</br>`;
         if (active) html += `<hr/>Active: ${numberWithCommas(active)}</br>`;
+        
         html += `Date: ${Date} </p>`;
         popup
         .setLngLat(coordinates)
@@ -317,6 +392,7 @@ function Timeseries() {
     var filters = ['==', 'Date', date];
     // change layer 
     map.setFilter(layer, filters);
+    map.setFilter("daily", filters);
   }
  
   const currentDate = dateRange[dateIndex].split("/");
