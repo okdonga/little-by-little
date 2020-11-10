@@ -7,7 +7,7 @@ import { FILENAME, LAYER_TYPE, LEGION_COLORS, LEGION_RANGE } from "./constant";
 import { numberWithCommas } from './util/number';
 import { generateDates } from "./util/date";
 
-mapboxgl.accessToken = process.env.REACT_APP_MAPBOXGL_ACCESS_TOKEN;
+mapboxgl.accessToken = "pk.eyJ1Ijoib2tkb25nIiwiYSI6ImNrN2JvcHJiODBkYjgzZW1zaGF2ZjVuenIifQ.9XNG94jkM8x0sNWzC8aJvQ";
 
 const mapContainerStyle = {
   position: "relative",
