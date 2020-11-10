@@ -8,10 +8,6 @@ git submodule init
 git submodule update 
 ```
 
-Create .env file 
-
-Add mapbox access token from https://account.mapbox.com/ 
-
 
 ```
 yarn install
