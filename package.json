@@ -22,7 +22,7 @@
     "update:geojson": "node ./scripts/index.js",
     "update:all": "yarn run update:geojson confirmed && yarn run update:geojson deaths && yarn run update:geojson daily",
     "update:submodule": "git submodule foreach git pull origin master",
-    "sync": "yarn run update:submodule && yarn run parse:all"
+    "sync": "yarn run update:submodule && yarn run update:all"
   },
   "eslintConfig": {
     "extends": "react-app"

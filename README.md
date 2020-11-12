@@ -16,6 +16,13 @@ yarn start
 
 Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
+### How to update latest data
+Original data updated once a day around 23:59 (UTC)
+
+```
+yarn run sync
+```
+
 
 ### How to deploy
 Any changes to the ```master``` branch will trigger an automatic deploy via [Netlify](https://app.netlify.com/sites/distracted-williams-3ba538/overview) 
