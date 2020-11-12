@@ -19,8 +19,8 @@
     "build": "CI= react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "parse:csv": "node ./scripts/csvToGeojson.js",
-    "parse:all": "yarn run parse:csv confirmed && yarn run parse:csv deaths && yarn run parse:csv daily",
+    "update:geojson": "node ./scripts/index.js",
+    "update:all": "yarn run update:geojson confirmed && yarn run update:geojson deaths && yarn run update:geojson daily",
     "update:submodule": "git submodule foreach git pull origin master",
     "sync": "yarn run update:submodule && yarn run parse:all"
   },
