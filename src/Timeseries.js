@@ -348,7 +348,7 @@ function Timeseries() {
   
         const { country_region, province_state, confirmed, deaths, Date, active, recovered, change } = casualty[0].properties;
         let html = `<strong>${country_region}</strong><p>province_state: ${province_state}</br>`;
-        if (confirmed) html += `Confirmed(cumulative): ${numberWithCommas(confirmed)}</br>`;
+        if (confirmed) html += `total cases: ${numberWithCommas(confirmed)}</br>`;
         if (recovered) html += `recovered: ${numberWithCommas(recovered)}</br>`;
         if (deaths) html += `Death: ${numberWithCommas(deaths)}</br>`;
         if (change) html += `Change: ${numberWithCommas(change)}</br>`;
