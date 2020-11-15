@@ -346,8 +346,8 @@ function Timeseries() {
           coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
         }
   
-        const { country_region, province_state, confirmed, deaths, Date, active, recovered, change } = casualty[0].properties;
-        let html = `<strong>${country_region}</strong><p>province_state: ${province_state}</br>`;
+        const { country_region, confirmed, deaths, Date, active, recovered, change } = casualty[0].properties;
+        let html = `<strong>${country_region}</strong></br>`;
         if (confirmed) html += `total cases: ${numberWithCommas(confirmed)}</br>`;
         if (recovered) html += `recovered: ${numberWithCommas(recovered)}</br>`;
         if (deaths) html += `Death: ${numberWithCommas(deaths)}</br>`;
